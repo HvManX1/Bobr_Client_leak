@@ -11,11 +11,7 @@
  *  net.minecraft.entity.player.EntityPlayer
  *  net.minecraft.network.Packet
  *  net.minecraft.network.play.client.CPacketPlayer$PositionRotation
- *  net.minecraft.network.play.client.CPacketPlayer$Rotation
- *  net.minecraft.network.play.client.CPacketUseEntity
- *  net.minecraft.network.play.client.CPacketUseEntity$Action
  *  net.minecraft.util.math.MathHelper
- *  net.minecraft.world.World
  *  net.minecraftforge.common.MinecraftForge
  *  net.minecraftforge.fml.common.eventhandler.SubscribeEvent
  *  net.minecraftforge.fml.common.gameevent.TickEvent$ClientTickEvent
@@ -32,25 +28,25 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.network.play.client.CPacketUseEntity;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import ru.terrar.bobr.events.SendPacketEvent;
 import ru.terrar.bobr.managers.FriendManager;
 import ru.terrar.bobr.modules.Module;
 import ru.terrar.bobr.modules.combat.AntiBot;
 import ru.terrar.bobr.settings.impl.BooleanSetting;
+import ru.terrar.bobr.settings.impl.EnumSetting;
 import ru.terrar.bobr.settings.impl.FloatSetting;
+import ru.terrar.bobr.util.Wrapper;
 
 public class AimPistot
 extends Module {
     public static final AimPistot INSTANCE = new AimPistot();
     public Minecraft mc = Minecraft.getMinecraft();
+    public final EnumSetting Mode = new EnumSetting("Mode", "Mode", Modes.values(), Modes.Client);
     public final FloatSetting reach = new FloatSetting("Reach", "reach", 250.0f, 0.0f, 250.0f);
     public final FloatSetting Predict = new FloatSetting("Predict", "Predict", 6.0f, 0.0f, 10.0f);
     public final FloatSetting Predictuse = new FloatSetting("Predictuse", "Predictuse", 6.0f, 0.0f, 100.0f);
@@ -67,10 +63,11 @@ extends Module {
     private int life_time_pred;
     private float post_f;
     private float post_f2;
+    private int del;
 
     public AimPistot() {
         super("AimPistol", "AimPistol", Module.ModuleCategory.COMBAT);
-        this.addSettings(this.reach, this.wals, this.Predict);
+        this.addSettings(this.reach, this.wals, this.Predict, this.Mode);
     }
 
     @Override
@@ -91,27 +88,6 @@ extends Module {
     }
 
     @SubscribeEvent
-    public void onSendPacket(SendPacketEvent event) {
-        CPacketUseEntity packet;
-        if (event.getPacket() instanceof CPacketUseEntity && (packet = (CPacketUseEntity)event.getPacket()).getAction() == CPacketUseEntity.Action.ATTACK) {
-            this.focusTarget = packet.getEntityFromWorld((World)Minecraft.getMinecraft().world);
-        }
-        if (this.target != null && (event.getPacket() instanceof CPacketPlayer.PositionRotation || event.getPacket() instanceof CPacketPlayer.Rotation)) {
-            double deltaX = this.target.posX - Minecraft.getMinecraft().player.posX;
-            double deltaY = this.target.posY + (double)(this.target.height / 2.0f) - Minecraft.getMinecraft().player.posY - (double)Minecraft.getMinecraft().player.getEyeHeight();
-            double deltaZ = this.target.posZ - Minecraft.getMinecraft().player.posZ;
-            double deltaGround = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
-            float pitch = (float)(-Math.toDegrees(Math.atan(deltaY / deltaGround)));
-            float yaw = (float)(-Math.toDegrees(Math.atan(deltaX / deltaZ)));
-            if (deltaZ <= 0.0) {
-                yaw = deltaX > 0.0 ? (yaw -= 180.0f) : (yaw += 180.0f);
-            }
-            EntityPlayerSP player = Minecraft.getMinecraft().player;
-            event.setPacket((Packet<?>)new CPacketPlayer.PositionRotation(player.posX, player.posY, player.posZ, yaw, pitch, player.onGround));
-        }
-    }
-
-    @SubscribeEvent
     @SideOnly(value=Side.CLIENT)
     public void onTick(TickEvent.ClientTickEvent event) {
         this.target = null;
@@ -121,28 +97,24 @@ extends Module {
         this.target = null;
         int yaw_min = 1000000000;
         for (Entity entity : Minecraft.getMinecraft().world.loadedEntityList) {
-            int n;
-            float f2;
-            float f;
             if (!this.isTarget(entity)) continue;
             if (!this.wals.getValue() && !AntiBot.isBot(entity.getName()) && !FriendManager.isFriend(entity.getName()) && entity instanceof EntityPlayer && Minecraft.getMinecraft().player.canEntityBeSeen(entity)) {
-                this.facing = AimPistot.faceTarget(entity, 360.0f, 360.0f, false);
-                f = this.facing[0];
-                f2 = this.facing[1];
-                n = Math.abs(Minecraft.getMinecraft().player.rotationYaw) >= Math.abs(f) ? (int)(Math.abs(Minecraft.getMinecraft().player.rotationYaw) - Math.abs(f)) : (int)((float)((int)Math.abs(f)) - Math.abs(Minecraft.getMinecraft().player.rotationYaw));
-                if (n < yaw_min) {
-                    yaw_min = n;
+                if (this.target == null) {
+                    this.target = entity;
+                } else if (Minecraft.getMinecraft().player.getDistanceSq(entity) < Minecraft.getMinecraft().player.getDistanceSq(this.target)) {
                     this.target = entity;
                 }
             }
             if (!this.wals.getValue() || AntiBot.isBot(entity.getName()) || FriendManager.isFriend(entity.getName()) || !(entity instanceof EntityPlayer)) continue;
-            this.facing = AimPistot.faceTarget(entity, 360.0f, 360.0f, false);
-            f = this.facing[0];
-            f2 = this.facing[1];
-            n = Math.abs(Minecraft.getMinecraft().player.rotationYaw) >= Math.abs(f) ? (int)(Math.abs(Minecraft.getMinecraft().player.rotationYaw) - Math.abs(f)) : (int)((float)((int)Math.abs(f)) - Math.abs(Minecraft.getMinecraft().player.rotationYaw));
-            if (n >= yaw_min) continue;
-            yaw_min = n;
+            if (this.target == null) {
+                this.target = entity;
+                continue;
+            }
+            if (!(Minecraft.getMinecraft().player.getDistanceSq(entity) < Minecraft.getMinecraft().player.getDistanceSq(this.target))) continue;
             this.target = entity;
+        }
+        if (this.target == null) {
+            this.del = 0;
         }
         if (this.target != null) {
             this.facing = AimPistot.faceTarget(this.target, 360.0f, 360.0f, false);
@@ -156,8 +128,13 @@ extends Module {
             n = AimPistot.faceCords(pred_f, (float)this.target.posY, pred_f2, 360.0f, 360.0f, false);
             pred_f = n[0];
             pred_f2 = n[1];
-            Minecraft.getMinecraft().player.rotationYaw = pred_f;
-            Minecraft.getMinecraft().player.rotationPitch = pred_f2;
+            if (this.Mode.getCurrentValue() == Modes.Client) {
+                Wrapper.INSTANCE.player().rotationYaw = pred_f;
+                Wrapper.INSTANCE.player().rotationPitch = pred_f2;
+            } else if (this.Mode.getCurrentValue() == Modes.Silent) {
+                EntityPlayerSP player = Wrapper.INSTANCE.player();
+                Wrapper.INSTANCE.sendPacket((Packet)new CPacketPlayer.PositionRotation(player.posX, player.posY, player.posZ, pred_f, pred_f2, player.onGround));
+            }
             this.old_must = old_f;
             this.old_posX = (float)this.target.posX;
             this.old_posZ = (float)this.target.posZ;

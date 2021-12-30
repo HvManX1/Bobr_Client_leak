@@ -27,7 +27,7 @@ public class RPC {
         RPC.discordRichPresence.startTimestamp = System.currentTimeMillis() / 1000L;
         RPC.discordRichPresence.details = "Null";
         RPC.discordRichPresence.largeImageKey = "bobr";
-        RPC.discordRichPresence.largeImageText = "Bobr Client  0.0.9";
+        RPC.discordRichPresence.largeImageText = "Bobr Client  0.1";
         discordRPC.Discord_UpdatePresence(discordRichPresence);
         new Thread(() -> {
             while (true) {

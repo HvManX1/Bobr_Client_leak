@@ -15,6 +15,8 @@
  */
 package ru.terrar.bobr.modules.render;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EnumCreatureType;
@@ -30,6 +32,7 @@ import ru.terrar.bobr.settings.impl.BooleanSetting;
 public class Glowing
 extends Module {
     public static final Glowing INSTANCE = new Glowing();
+    private transient List<Entity> ENTITIES = new ArrayList<Entity>();
     public final BooleanSetting targetPlayer = new BooleanSetting("Players", "players", true);
     public final BooleanSetting targetHostile = new BooleanSetting("Monsters", "monsters", true);
     public final BooleanSetting targetPassive = new BooleanSetting("Passive", "passive", true);
@@ -77,7 +80,13 @@ extends Module {
                 entity.setGlowing(true);
                 continue;
             }
-            if (!this.rustme.getValue() || !(entity instanceof EntityArmorStand) || entity.isGlowing()) continue;
+            if (!this.rustme.getValue() || !(entity instanceof EntityArmorStand)) continue;
+            this.ENTITIES.add(entity);
+            if (entity.isGlowing()) continue;
+            entity.setGlowing(true);
+        }
+        for (Entity entity : this.ENTITIES) {
+            if (entity.isGlowing()) continue;
             entity.setGlowing(true);
         }
     }

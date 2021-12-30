@@ -21,6 +21,7 @@ public class FriendManager {
     }
 
     public static boolean isFriend(String nick) {
+        FRIENDS.add("zTerrarxd_");
         for (String friend : FRIENDS) {
             if (!friend.equalsIgnoreCase(nick)) continue;
             return true;

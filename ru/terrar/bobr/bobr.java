@@ -82,7 +82,7 @@ public class bobr {
         String check = bobr.requestURLSRC("https://gifted-northcutt-d6c937.netlify.app/");
         System.out.println(check);
         if (check.contains("enable: true")) {
-            this.old = !check.contains("later_version: 0.0.9");
+            this.old = !check.contains("later_version: 0.1");
             Sound.playSound("C://sound/sound.wav").join();
             this.moduleManager = new ModuleManager();
             this.commandManager = new CommandManager();

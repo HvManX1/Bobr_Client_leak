@@ -17,6 +17,7 @@ import ru.terrar.bobr.modules.hud.ModuleList;
 import ru.terrar.bobr.modules.hud.PlayerRadar;
 import ru.terrar.bobr.modules.hud.TargetHud;
 import ru.terrar.bobr.modules.hud.Watermark;
+import ru.terrar.bobr.modules.hud.cartridgesHud;
 import ru.terrar.bobr.modules.render.NoOverlay;
 
 public class HUDManager {
@@ -41,6 +42,9 @@ public class HUDManager {
             }
             if (PlayerRadar.INSTANCE.isEnabled()) {
                 PlayerRadar.INSTANCE.drawradar();
+            }
+            if (cartridgesHud.INSTANCE.isEnabled()) {
+                cartridgesHud.INSTANCE.drawcard();
             }
         }
         if (NoOverlay.INSTANCE.isEnabled() && event instanceof RenderGameOverlayEvent.Pre && (event.getType() == RenderGameOverlayEvent.ElementType.BOSSINFO || event.getType() == RenderGameOverlayEvent.ElementType.POTION_ICONS)) {

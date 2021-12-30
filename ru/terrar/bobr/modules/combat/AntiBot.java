@@ -8,12 +8,12 @@
  *  net.minecraft.client.entity.EntityOtherPlayerMP
  *  net.minecraft.entity.Entity
  *  net.minecraft.entity.player.EntityPlayer
+ *  net.minecraft.util.text.TextFormatting
  *  net.minecraftforge.common.MinecraftForge
  *  net.minecraftforge.fml.common.eventhandler.SubscribeEvent
  *  net.minecraftforge.fml.common.gameevent.TickEvent$ClientTickEvent
  *  net.minecraftforge.fml.relauncher.Side
  *  net.minecraftforge.fml.relauncher.SideOnly
- *  org.lwjgl.input.Mouse
  */
 package ru.terrar.bobr.modules.combat;
 
@@ -23,12 +23,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.input.Mouse;
 import ru.terrar.bobr.modules.Module;
 import ru.terrar.bobr.settings.impl.BooleanSetting;
 import ru.terrar.bobr.settings.impl.EnumSetting;
@@ -38,16 +38,15 @@ public class AntiBot
 extends Module {
     private transient long time;
     public static final AntiBot INSTANCE = new AntiBot();
-    public final EnumSetting click = new EnumSetting("Click", "Click", Click.values(), Click.LEFT);
-    public final BooleanSetting clicks = new BooleanSetting("Clicks", "Clicks", true);
-    public final BooleanSetting InvisibleRemove = new BooleanSetting("InvisibleRemove", "InvisibleRemove", true);
+    public final EnumSetting mode = new EnumSetting("Mode", "Mode", Click.values(), Click.MATRIX);
+    public final BooleanSetting Remove = new BooleanSetting("Remove", "Remove", true);
     private int but = 0;
     public static List<String> BOTS = new ArrayList<String>();
     public boolean toggle;
 
     public AntiBot() {
         super("AntiBot", "antibot", Module.ModuleCategory.COMBAT);
-        this.addSettings(this.clicks, this.click, this.InvisibleRemove);
+        this.addSettings(this.mode, this.Remove);
     }
 
     @Override
@@ -69,64 +68,53 @@ extends Module {
     @SubscribeEvent
     @SideOnly(value=Side.CLIENT)
     public void onTick(TickEvent.ClientTickEvent event) {
-        if (Minecraft.getMinecraft().world == null || !Minecraft.getMinecraft().world.isRemote) {
-            return;
-        }
-        for (Entity entity : Minecraft.getMinecraft().world.loadedEntityList) {
-            if (!entity.isInvisibleToPlayer((EntityPlayer)Minecraft.getMinecraft().player) || !this.InvisibleRemove.getValue() || !(entity instanceof EntityPlayer)) continue;
-            Minecraft.getMinecraft().world.removeEntity(entity);
-            ChatUtil.clientMessage(entity.getName() + " Removed");
-        }
-        try {
+        block5: {
+            block4: {
+                if (Minecraft.getMinecraft().world == null || !Minecraft.getMinecraft().world.isRemote) {
+                    return;
+                }
+                if (this.mode.getCurrentValue() != Click.MATRIX) break block4;
+                for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
+                    if (e == Minecraft.getMinecraft().player || e.ticksExisted >= 5 || !(e instanceof EntityOtherPlayerMP) || ((EntityOtherPlayerMP)e).hurtTime <= 0 || !(Minecraft.getMinecraft().player.getDistance(e) <= 25.0f) || Minecraft.getMinecraft().getConnection().getPlayerInfo(e.getUniqueID()).getResponseTime() == 0) continue;
+                    BOTS.add(e.getName());
+                    if (!this.Remove.getValue()) continue;
+                    Minecraft.getMinecraft().world.removeEntity(e);
+                }
+                break block5;
+            }
+            if (this.mode.getCurrentValue() != Click.RUSTME) break block5;
             for (Entity e : Minecraft.getMinecraft().world.loadedEntityList) {
-                if (e == Minecraft.getMinecraft().player || e.ticksExisted >= 5 || !(e instanceof EntityOtherPlayerMP) || !(e instanceof EntityPlayer) || !(Minecraft.getMinecraft().player.getDistance(e) <= 8.0f) || Minecraft.getMinecraft().getConnection().getPlayerInfo(e.getUniqueID()).getResponseTime() == 0) continue;
+                if (e == Minecraft.getMinecraft().player || e.ticksExisted >= 5 || !(e instanceof EntityOtherPlayerMP)) continue;
+                if (e.isInvisibleToPlayer((EntityPlayer)Minecraft.getMinecraft().player)) {
+                    BOTS.add(e.getName());
+                    ChatUtil.clientMessage((Object)TextFormatting.RED + "[" + (Object)TextFormatting.GREEN + "AntiBot" + (Object)TextFormatting.RED + "] " + (Object)TextFormatting.RESET + e.getName() + (Object)TextFormatting.RESET + " Is Bot.");
+                    if (!this.Remove.getValue()) continue;
+                    Minecraft.getMinecraft().world.removeEntity(e);
+                    continue;
+                }
+                if (((EntityOtherPlayerMP)e).hurtTime <= 0 || !(Minecraft.getMinecraft().player.getDistance(e) <= 7.0f) || Minecraft.getMinecraft().getConnection().getPlayerInfo(e.getUniqueID()).getResponseTime() == 0) continue;
+                BOTS.add(e.getName());
+                ChatUtil.clientMessage((Object)TextFormatting.RED + "[" + (Object)TextFormatting.GREEN + "AntiBot" + (Object)TextFormatting.RED + "] " + (Object)TextFormatting.RESET + e.getName() + (Object)TextFormatting.RESET + " Is Bot.");
+                if (!this.Remove.getValue()) continue;
                 Minecraft.getMinecraft().world.removeEntity(e);
-                ChatUtil.clientMessage(e.getName() + " Removed");
             }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            Entity entity = Minecraft.getMinecraft().objectMouseOver.entityHit;
-            if (entity != null && entity instanceof EntityPlayer && this.clicks.getValue()) {
-                if (this.click.getCurrentValue() == Click.LEFT) {
-                    this.but = 0;
-                } else if (this.click.getCurrentValue() == Click.RIGHT) {
-                    this.but = 1;
-                } else if (this.click.getCurrentValue() == Click.MIDDLE) {
-                    this.but = 2;
-                } else if (this.click.getCurrentValue() == Click.NO && AntiBot.isBot(entity.getName())) {
-                    BOTS.add(entity.getName());
-                    ChatUtil.clientMessage(entity.getName() + " is Not Bot");
-                }
-                if (Mouse.isButtonDown((int)this.but) && this.click.getCurrentValue() != Click.NO && AntiBot.isBot(entity.getName())) {
-                    BOTS.add(entity.getName());
-                    ChatUtil.clientMessage(entity.getName() + " is Not Bot");
-                }
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
     public static boolean isBot(String nick) {
-        if (AntiBot.INSTANCE.toggle && AntiBot.INSTANCE.clicks.getValue()) {
+        if (AntiBot.INSTANCE.toggle) {
             for (String friend : BOTS) {
                 if (!friend.equalsIgnoreCase(nick)) continue;
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
         return false;
     }
 
     public static enum Click {
-        NO("NO"),
-        LEFT("Left"),
-        MIDDLE("Middle"),
-        RIGHT("Right");
+        RUSTME("RustMe"),
+        MATRIX("Matrix");
 
         private final String name;
 

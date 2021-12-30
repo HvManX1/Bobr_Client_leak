@@ -36,13 +36,12 @@ import org.lwjgl.opengl.GL11;
 import ru.terrar.bobr.managers.FriendManager;
 import ru.terrar.bobr.modules.Module;
 import ru.terrar.bobr.modules.combat.AimPistot;
-import ru.terrar.bobr.modules.combat.KillAura;
 import ru.terrar.bobr.modules.combat.TriggerBot;
 import ru.terrar.bobr.modules.combat.aimAssist;
 import ru.terrar.bobr.settings.impl.BooleanSetting;
 import ru.terrar.bobr.settings.impl.FloatSetting;
 import ru.terrar.bobr.util.ColorUtil;
-import ru.terrar.bobr.wint.RenderUtil;
+import ru.terrar.bobr.wint.RenderrUtil;
 
 public class TargetHud
 extends Module {
@@ -87,7 +86,7 @@ extends Module {
     }
 
     public void drawtartet() {
-        block24: {
+        block22: {
             if (Minecraft.getMinecraft().world == null || !Minecraft.getMinecraft().world.isRemote) {
                 return;
             }
@@ -100,10 +99,8 @@ extends Module {
                     target = aimAssist.INSTANCE.target;
                 } else if (TriggerBot.INSTANCE.isEnabled()) {
                     target = TriggerBot.INSTANCE.entity;
-                } else if (KillAura.INSTANCE.isEnabled()) {
-                    target = KillAura.INSTANCE.target;
                 }
-                if (target == null || !(target instanceof EntityPlayer)) break block24;
+                if (target == null || !(target instanceof EntityPlayer)) break block22;
                 int width = 100;
                 ScaledResolution sr = new ScaledResolution(this.mc);
                 int[] rainbow = ColorUtil.getRainbow(5, 1.0f);
@@ -111,7 +108,7 @@ extends Module {
                 GL11.glPushMatrix();
                 GL11.glTranslated((double)((float)(width / 100) + this.posX.getValue()), (double)((float)(sr.getScaledHeight() / 100) + this.posY.getValue()), (double)0.0);
                 GL11.glTranslated((double)((float)(sr.getScaledWidth() / 2 + 10) + this.posX.getValue()), (double)((float)(sr.getScaledHeight() / 2) + this.posY.getValue()), (double)(sr.getScaledWidth() / 2 + 10));
-                RenderUtil.drawSmoothRect(0.0f, 0.0f, 110.0f, 45.0f, new Color(35, 35, 40, 230).getRGB());
+                RenderrUtil.drawSmoothRect(0.0f, 0.0f, 110.0f, 45.0f, new Color(35, 35, 40, 230).getRGB());
                 if (FriendManager.isFriend(target.getName())) {
                     this.fr.drawString(target.getName(), 34, 2, Color.GREEN.getRGB());
                 } else {
@@ -150,15 +147,15 @@ extends Module {
                 }
                 this.fr.drawString((Object)TextFormatting.BLUE + "Dist: " + (Object)TextFormatting.RED + (int)Minecraft.getMinecraft().player.getDistance(target), 34, 14, 0xFFFFFF);
                 if (((EntityPlayer)target).hurtTime > 0) {
-                    RenderUtil.drawRect(0.0, 32.0, one_HP * ((EntityPlayer)target).getHealth(), 45.0, Color.RED.getRGB());
+                    RenderrUtil.drawRect(0.0, 32.0, one_HP * ((EntityPlayer)target).getHealth(), 45.0, Color.RED.getRGB());
                 } else {
-                    RenderUtil.drawRect(0.0, 32.0, one_HP * ((EntityPlayer)target).getHealth(), 45.0, Color.GREEN.getRGB());
+                    RenderrUtil.drawRect(0.0, 32.0, one_HP * ((EntityPlayer)target).getHealth(), 45.0, Color.GREEN.getRGB());
                 }
                 if (AimPistot.INSTANCE.isEnabled()) {
                     if (AimPistot.INSTANCE.can_attack) {
-                        RenderUtil.drawSmoothRect(95.0f, 0.0f, 110.0f, 15.0f, Color.red.getRGB());
+                        RenderrUtil.drawSmoothRect(95.0f, 0.0f, 110.0f, 15.0f, Color.red.getRGB());
                     } else {
-                        RenderUtil.drawSmoothRect(95.0f, 0.0f, 110.0f, 15.0f, Color.GREEN.getRGB());
+                        RenderrUtil.drawSmoothRect(95.0f, 0.0f, 110.0f, 15.0f, Color.GREEN.getRGB());
                     }
                 }
                 this.fr.drawString((int)((EntityPlayer)target).getHealth() + " - " + ((EntityPlayer)target).getMaxHealth(), 5, 34, hexColor);

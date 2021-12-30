@@ -11,7 +11,6 @@ import ru.terrar.bobr.modules.combat.AntiAim;
 import ru.terrar.bobr.modules.combat.AntiBot;
 import ru.terrar.bobr.modules.combat.AutoTotem;
 import ru.terrar.bobr.modules.combat.HitBoxMod;
-import ru.terrar.bobr.modules.combat.KillAura;
 import ru.terrar.bobr.modules.combat.MiddleClickPearl;
 import ru.terrar.bobr.modules.combat.TriggerBot;
 import ru.terrar.bobr.modules.combat.Velocity;
@@ -23,6 +22,7 @@ import ru.terrar.bobr.modules.hud.ModuleList;
 import ru.terrar.bobr.modules.hud.PlayerRadar;
 import ru.terrar.bobr.modules.hud.TargetHud;
 import ru.terrar.bobr.modules.hud.Watermark;
+import ru.terrar.bobr.modules.hud.cartridgesHud;
 import ru.terrar.bobr.modules.movement.GuiMove;
 import ru.terrar.bobr.modules.movement.NoSlow;
 import ru.terrar.bobr.modules.movement.SafeWalk;
@@ -35,6 +35,7 @@ import ru.terrar.bobr.modules.player.Throwpot;
 import ru.terrar.bobr.modules.render.EntityESP;
 import ru.terrar.bobr.modules.render.FullBright;
 import ru.terrar.bobr.modules.render.Glowing;
+import ru.terrar.bobr.modules.render.ItemESP;
 import ru.terrar.bobr.modules.render.NameTags;
 import ru.terrar.bobr.modules.render.NoOverlay;
 import ru.terrar.bobr.modules.render.StorageESP;
@@ -48,7 +49,6 @@ public class ModuleManager {
     public void init() {
         this.MODULE_LIST.add(AutoTotem.INSTANCE);
         this.MODULE_LIST.add(TriggerBot.INSTANCE);
-        this.MODULE_LIST.add(KillAura.INSTANCE);
         this.MODULE_LIST.add(aimAssist.INSTANCE);
         this.MODULE_LIST.add(HitBoxMod.INSTANCE);
         this.MODULE_LIST.add(Velocity.INSTANCE);
@@ -63,6 +63,7 @@ public class ModuleManager {
         this.MODULE_LIST.add(TargetHud.INSTANCE);
         this.MODULE_LIST.add(DiscordRPC.INSTANCE);
         this.MODULE_LIST.add(PlayerRadar.INSTANCE);
+        this.MODULE_LIST.add(cartridgesHud.INSTANCE);
         this.MODULE_LIST.add(GuiMove.INSTANCE);
         this.MODULE_LIST.add(NoSlow.INSTANCE);
         this.MODULE_LIST.add(SafeWalk.INSTANCE);
@@ -81,6 +82,7 @@ public class ModuleManager {
         this.MODULE_LIST.add(NameTags.INSTANCE);
         this.MODULE_LIST.add(Glowing.INSTANCE);
         this.MODULE_LIST.add(WallHack.INSTANCE);
+        this.MODULE_LIST.add(ItemESP.INSTANCE);
     }
 }
 

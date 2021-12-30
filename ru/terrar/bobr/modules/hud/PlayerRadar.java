@@ -66,7 +66,7 @@ extends Module {
                 color = Color.GREEN.getRGB();
             }
             s = s + " [" + ((EntityPlayer)entity).getHealth() + "/" + ((EntityPlayer)entity).getMaxHealth() + "] [" + (int)Minecraft.getMinecraft().player.getDistance(entity) + ']';
-            this.fr.drawStringWithShadow(s, 0.0f, (float)(30 + n * this.fr.FONT_HEIGHT), color);
+            this.fr.drawStringWithShadow(s, 0.0f, (float)(100 + n * this.fr.FONT_HEIGHT), color);
             ++n;
         }
     }

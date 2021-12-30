@@ -40,10 +40,41 @@ import net.minecraft.util.math.AxisAlignedBB;
 import org.lwjgl.opengl.GL11;
 import ru.terrar.bobr.wint.MinecraftHelper;
 
-public class RenderUtil
+public class RenderrUtil
 implements MinecraftHelper {
     private static final Frustum frustrum = new Frustum();
     private static final double DOUBLE_PI = Math.PI * 2;
+
+    public static void drawNewRect(double left, double top, double right, double bottom, int color) {
+        if (left < right) {
+            double i = left;
+            left = right;
+            right = i;
+        }
+        if (top < bottom) {
+            double j = top;
+            top = bottom;
+            bottom = j;
+        }
+        float f3 = (float)(color >> 24 & 0xFF) / 255.0f;
+        float f = (float)(color >> 16 & 0xFF) / 255.0f;
+        float f1 = (float)(color >> 8 & 0xFF) / 255.0f;
+        float f2 = (float)(color & 0xFF) / 255.0f;
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder vertexbuffer = tessellator.getBuffer();
+        GlStateManager.enableBlend();
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate((GlStateManager.SourceFactor)GlStateManager.SourceFactor.SRC_ALPHA, (GlStateManager.DestFactor)GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, (GlStateManager.SourceFactor)GlStateManager.SourceFactor.ONE, (GlStateManager.DestFactor)GlStateManager.DestFactor.ZERO);
+        GlStateManager.color((float)f, (float)f1, (float)f2, (float)f3);
+        vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
+        vertexbuffer.pos(left, bottom, 0.0).endVertex();
+        vertexbuffer.pos(right, bottom, 0.0).endVertex();
+        vertexbuffer.pos(right, top, 0.0).endVertex();
+        vertexbuffer.pos(left, top, 0.0).endVertex();
+        tessellator.draw();
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
+    }
 
     public static double interpolate(double current, double old, double scale) {
         return old + (current - old) * scale;
@@ -55,32 +86,32 @@ implements MinecraftHelper {
         GlStateManager.enableDepth();
         RenderHelper.enableGUIStandardItemLighting();
         mc.getRenderItem().renderItemAndEffectIntoGUI(itemStack, x, y);
-        mc.getRenderItem().renderItemOverlays(RenderUtil.mc.fontRenderer, itemStack, x, y);
+        mc.getRenderItem().renderItemOverlays(RenderrUtil.mc.fontRenderer, itemStack, x, y);
         RenderHelper.disableStandardItemLighting();
         GlStateManager.color((float)1.0f, (float)1.0f, (float)1.0f, (float)1.0f);
         GlStateManager.disableDepth();
     }
 
     public static void drawRectWithEdge(double x, double y, double width, double height, Color color, Color color2) {
-        RenderUtil.drawRect(x, y, x + width, y + height, color.getRGB());
+        RenderrUtil.drawRect(x, y, x + width, y + height, color.getRGB());
         int c = color2.getRGB();
-        RenderUtil.drawRect(x - 1.0, y, x, y + height, c);
-        RenderUtil.drawRect(x + width, y, x + width + 1.0, y + height, c);
-        RenderUtil.drawRect(x - 1.0, y - 1.0, x + width + 1.0, y, c);
-        RenderUtil.drawRect(x - 1.0, y + height, x + width + 1.0, y + height + 1.0, c);
+        RenderrUtil.drawRect(x - 1.0, y, x, y + height, c);
+        RenderrUtil.drawRect(x + width, y, x + width + 1.0, y + height, c);
+        RenderrUtil.drawRect(x - 1.0, y - 1.0, x + width + 1.0, y, c);
+        RenderrUtil.drawRect(x - 1.0, y + height, x + width + 1.0, y + height + 1.0, c);
     }
 
     public static void drawRoundedRect(double x, double y, double x1, double y1, int borderC, int insideC) {
-        RenderUtil.drawRect(x + 0.5, y, x1 - 0.5, y + 0.5, insideC);
-        RenderUtil.drawRect(x + 0.5, y1 - 0.5, x1 - 0.5, y1, insideC);
-        RenderUtil.drawRect(x, y + 0.5, x1, y1 - 0.5, insideC);
+        RenderrUtil.drawRect(x + 0.5, y, x1 - 0.5, y + 0.5, insideC);
+        RenderrUtil.drawRect(x + 0.5, y1 - 0.5, x1 - 0.5, y1, insideC);
+        RenderrUtil.drawRect(x, y + 0.5, x1, y1 - 0.5, insideC);
     }
 
     public static void drawRoundedRect(int xCoord, int yCoord, int xSize, int ySize, int colour) {
         int width = xCoord + xSize;
         int height = yCoord + ySize;
-        RenderUtil.drawRect(xCoord + 1, yCoord, width - 1, height, colour);
-        RenderUtil.drawRect(xCoord, yCoord + 1, width, height - 1, colour);
+        RenderrUtil.drawRect(xCoord + 1, yCoord, width - 1, height, colour);
+        RenderrUtil.drawRect(xCoord, yCoord + 1, width, height - 1, colour);
     }
 
     public static void drawBoundingBox(AxisAlignedBB axisalignedbb) {
@@ -159,12 +190,12 @@ implements MinecraftHelper {
     public static final void drawSmoothRect(float left, float top, float right, float bottom, int color) {
         GL11.glEnable((int)3042);
         GL11.glEnable((int)2848);
-        RenderUtil.drawRect(left, top, right, bottom, color);
+        RenderrUtil.drawRect(left, top, right, bottom, color);
         GL11.glScalef((float)0.5f, (float)0.5f, (float)0.5f);
-        RenderUtil.drawRect(left * 2.0f - 1.0f, top * 2.0f, left * 2.0f, bottom * 2.0f - 1.0f, color);
-        RenderUtil.drawRect(left * 2.0f, top * 2.0f - 1.0f, right * 2.0f, top * 2.0f, color);
-        RenderUtil.drawRect(right * 2.0f, top * 2.0f, right * 2.0f + 1.0f, bottom * 2.0f - 1.0f, color);
-        RenderUtil.drawRect(left * 2.0f, bottom * 2.0f - 1.0f, right * 2.0f, bottom * 2.0f, color);
+        RenderrUtil.drawRect(left * 2.0f - 1.0f, top * 2.0f, left * 2.0f, bottom * 2.0f - 1.0f, color);
+        RenderrUtil.drawRect(left * 2.0f, top * 2.0f - 1.0f, right * 2.0f, top * 2.0f, color);
+        RenderrUtil.drawRect(right * 2.0f, top * 2.0f, right * 2.0f + 1.0f, bottom * 2.0f - 1.0f, color);
+        RenderrUtil.drawRect(left * 2.0f, bottom * 2.0f - 1.0f, right * 2.0f, bottom * 2.0f, color);
         GL11.glDisable((int)3042);
         GL11.glScalef((float)2.0f, (float)2.0f, (float)2.0f);
     }
@@ -175,7 +206,7 @@ implements MinecraftHelper {
         GL11.glPushMatrix();
         Minecraft.getMinecraft().getTextureManager().bindTexture(image);
         Gui.drawModalRectWithCustomSizedTexture((int)x, (int)y, (float)0.0f, (float)0.0f, (int)width, (int)height, (float)width, (float)height);
-        RenderUtil.disableGL2D();
+        RenderrUtil.disableGL2D();
         GL11.glPopMatrix();
     }
 
@@ -193,7 +224,7 @@ implements MinecraftHelper {
         float x = r *= 2.0f;
         float y = 0.0f;
         GL11.glEnable((int)2848);
-        RenderUtil.enableGL2D();
+        RenderrUtil.enableGL2D();
         GL11.glScalef((float)0.5f, (float)0.5f, (float)0.5f);
         GL11.glColor4f((float)f1, (float)f2, (float)f3, (float)f);
         GL11.glBegin((int)2);
@@ -205,7 +236,7 @@ implements MinecraftHelper {
         }
         GL11.glEnd();
         GL11.glScalef((float)2.0f, (float)2.0f, (float)2.0f);
-        RenderUtil.disableGL2D();
+        RenderrUtil.disableGL2D();
         GlStateManager.color((float)1.0f, (float)1.0f, (float)1.0f, (float)1.0f);
         GL11.glPopMatrix();
     }
@@ -290,8 +321,8 @@ implements MinecraftHelper {
     }
 
     public static void drawBorderedRect(double left, double top, double right, double bottom, double borderWidth, int insideColor, int borderColor, boolean borderIncludedInBounds) {
-        RenderUtil.drawRect(left - (!borderIncludedInBounds ? borderWidth : 0.0), top - (!borderIncludedInBounds ? borderWidth : 0.0), right + (!borderIncludedInBounds ? borderWidth : 0.0), bottom + (!borderIncludedInBounds ? borderWidth : 0.0), borderColor);
-        RenderUtil.drawRect(left + (borderIncludedInBounds ? borderWidth : 0.0), top + (borderIncludedInBounds ? borderWidth : 0.0), right - (borderIncludedInBounds ? borderWidth : 0.0), bottom - (borderIncludedInBounds ? borderWidth : 0.0), insideColor);
+        RenderrUtil.drawRect(left - (!borderIncludedInBounds ? borderWidth : 0.0), top - (!borderIncludedInBounds ? borderWidth : 0.0), right + (!borderIncludedInBounds ? borderWidth : 0.0), bottom + (!borderIncludedInBounds ? borderWidth : 0.0), borderColor);
+        RenderrUtil.drawRect(left + (borderIncludedInBounds ? borderWidth : 0.0), top + (borderIncludedInBounds ? borderWidth : 0.0), right - (borderIncludedInBounds ? borderWidth : 0.0), bottom - (borderIncludedInBounds ? borderWidth : 0.0), insideColor);
     }
 
     public static void drawRect(double left, double top, double right, double bottom, int color) {
@@ -352,44 +383,13 @@ implements MinecraftHelper {
         GlStateManager.disableBlend();
     }
 
-    public static void drawNewRect(double left, double top, double right, double bottom, int color) {
-        if (left < right) {
-            double i = left;
-            left = right;
-            right = i;
-        }
-        if (top < bottom) {
-            double j = top;
-            top = bottom;
-            bottom = j;
-        }
-        float f3 = (float)(color >> 24 & 0xFF) / 255.0f;
-        float f = (float)(color >> 16 & 0xFF) / 255.0f;
-        float f1 = (float)(color >> 8 & 0xFF) / 255.0f;
-        float f2 = (float)(color & 0xFF) / 255.0f;
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexbuffer = tessellator.getBuffer();
-        GlStateManager.enableBlend();
-        GlStateManager.disableTexture2D();
-        GlStateManager.tryBlendFuncSeparate((GlStateManager.SourceFactor)GlStateManager.SourceFactor.SRC_ALPHA, (GlStateManager.DestFactor)GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, (GlStateManager.SourceFactor)GlStateManager.SourceFactor.ONE, (GlStateManager.DestFactor)GlStateManager.DestFactor.ZERO);
-        GlStateManager.color((float)f, (float)f1, (float)f2, (float)f3);
-        vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
-        vertexbuffer.pos(left, bottom, 0.0).endVertex();
-        vertexbuffer.pos(right, bottom, 0.0).endVertex();
-        vertexbuffer.pos(right, top, 0.0).endVertex();
-        vertexbuffer.pos(left, top, 0.0).endVertex();
-        tessellator.draw();
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
-    }
-
     public static boolean isInViewFrustrum(Entity entity) {
-        return RenderUtil.isInViewFrustrum(entity.getEntityBoundingBox()) || entity.ignoreFrustumCheck;
+        return RenderrUtil.isInViewFrustrum(entity.getEntityBoundingBox()) || entity.ignoreFrustumCheck;
     }
 
     public static void drawLinesAroundPlayer(Entity entity, double radius, float partialTicks, int points, float width, int color) {
         GL11.glPushMatrix();
-        RenderUtil.enableGL2D3();
+        RenderrUtil.enableGL2D3();
         GL11.glDisable((int)3553);
         GL11.glEnable((int)2848);
         GL11.glHint((int)3154, (int)4354);
@@ -403,7 +403,7 @@ implements MinecraftHelper {
         double x = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * (double)partialTicks - renderManager.viewerPosX;
         double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * (double)partialTicks - renderManager.viewerPosY;
         double z = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * (double)partialTicks - renderManager.viewerPosZ;
-        RenderUtil.color228(color);
+        RenderrUtil.color228(color);
         for (int i = 0; i <= points; ++i) {
             GL11.glVertex3d((double)(x + radius * Math.cos((double)i * (Math.PI * 2) / (double)points)), (double)y, (double)(z + radius * Math.sin((double)i * (Math.PI * 2) / (double)points)));
         }
@@ -414,7 +414,7 @@ implements MinecraftHelper {
         GL11.glDisable((int)2848);
         GL11.glEnable((int)2929);
         GL11.glEnable((int)3553);
-        RenderUtil.disableGL2D3();
+        RenderrUtil.disableGL2D3();
         GL11.glPopMatrix();
     }
 
@@ -551,11 +551,11 @@ implements MinecraftHelper {
     }
 
     public static void rectangleBordered(double x, double y, double x1, double y1, double width, int internalColor, int borderColor) {
-        RenderUtil.drawRect(x + width, y + width, x1 - width, y1 - width, internalColor);
-        RenderUtil.drawRect(x + width, y, x1 - width, y + width, borderColor);
-        RenderUtil.drawRect(x, y, x + width, y1, borderColor);
-        RenderUtil.drawRect(x1 - width, y, x1, y1, borderColor);
-        RenderUtil.drawRect(x + width, y1 - width, x1 - width, y1, borderColor);
+        RenderrUtil.drawRect(x + width, y + width, x1 - width, y1 - width, internalColor);
+        RenderrUtil.drawRect(x + width, y, x1 - width, y + width, borderColor);
+        RenderrUtil.drawRect(x, y, x + width, y1, borderColor);
+        RenderrUtil.drawRect(x1 - width, y, x1, y1, borderColor);
+        RenderrUtil.drawRect(x + width, y1 - width, x1 - width, y1, borderColor);
     }
 }
 

@@ -6,6 +6,7 @@
  * Could not load the following classes:
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.FontRenderer
+ *  net.minecraft.client.gui.Gui
  *  net.minecraft.client.renderer.GlStateManager
  *  net.minecraft.entity.Entity
  *  net.minecraft.util.ResourceLocation
@@ -13,14 +14,15 @@
 package ru.terrar.bobr.modules.hud;
 
 import java.io.IOException;
+import java.util.Calendar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import ru.terrar.bobr.bobr;
 import ru.terrar.bobr.modules.Module;
-import ru.terrar.bobr.util.ColorUtil;
+import ru.terrar.bobr.settings.impl.BooleanSetting;
 
 public class Watermark
 extends Module {
@@ -33,28 +35,30 @@ extends Module {
     private boolean old = false;
     private String enter;
     private final FontRenderer fr;
-    private final ResourceLocation logo;
+    public final BooleanSetting Snow;
+    private ResourceLocation Logo;
+    private ResourceLocation SnowLogo;
 
     public Watermark() {
         super("Watermark", "watermark", Module.ModuleCategory.HUD);
         this.fr = Minecraft.getMinecraft().fontRenderer;
-        this.logo = new ResourceLocation("bobr", "textures/bobr.png");
+        this.Snow = new BooleanSetting("Snow", "Snow", true);
+        this.Logo = new ResourceLocation("ref", "textures/logo.png");
+        this.SnowLogo = new ResourceLocation("ref", "textures/snowlogo.png");
+        this.addSettings(this.Snow);
     }
 
     public void drawWatermark() throws IOException {
-        int[] rainbow = ColorUtil.getRainbow(5, 0.0f);
-        int rainbowHex = ColorUtil.RGBtoHex(rainbow[0], rainbow[1], rainbow[2]);
+        Calendar calendar = Calendar.getInstance();
+        int Month = calendar.get(2);
         GlStateManager.pushMatrix();
         GlStateManager.translate((float)5.0f, (float)5.0f, (float)0.0f);
-        GlStateManager.scale((float)1.5f, (float)1.5f, (float)1.0f);
-        int nameEnd = this.fr.drawStringWithShadow("Bobr Client", 0.0f, 0.0f, rainbowHex);
-        GlStateManager.scale((float)0.6666667f, (float)0.6666667f, (float)1.0f);
-        GlStateManager.translate((double)(1.5 * (double)nameEnd), (double)4.0, (double)0.0);
-        if (bobr.getGate().old) {
-            this.fr.drawStringWithShadow("0.0.9 - old", 0.0f, 0.0f, 0x909090);
+        if (this.Snow.getValue()) {
+            this.mc.renderEngine.bindTexture(this.SnowLogo);
         } else {
-            this.fr.drawStringWithShadow("0.0.9", 0.0f, 0.0f, 0x909090);
+            this.mc.renderEngine.bindTexture(this.Logo);
         }
+        Gui.drawScaledCustomSizeModalRect((int)0, (int)0, (float)0.0f, (float)0.0f, (int)150, (int)75, (int)150, (int)75, (float)150.0f, (float)75.0f);
         GlStateManager.popMatrix();
     }
 }
