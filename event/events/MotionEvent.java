@@ -1,0 +1,19 @@
+/*
+ * Decompiled with CFR 0.150.
+ */
+package event.events;
+
+import event.Event;
+
+public class MotionEvent
+extends Event {
+
+    public static class Post
+    extends MotionEvent {
+    }
+
+    public static class Pre
+    extends MotionEvent {
+    }
+}
+
